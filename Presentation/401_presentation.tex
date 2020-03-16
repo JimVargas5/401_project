@@ -14,10 +14,11 @@
 % From me
 \usepackage{multicol}
 \usepackage{ dsfont }
+\usepackage{hyperref}
 
 
 \def\lfoot{Portland State Applied and Computational Math Group} 
-\def\rfoot{Portland State University DATE XXXXXXXXX}
+\def\rfoot{Portland State University March 11, 2020}
 
 
 
@@ -31,7 +32,7 @@
 \begin{center}
 {\large\bf\color{Green} An Exploration of a Lightning-Fast Laplace Solver}\\
 by Jim Vargas\\
-under direction of Dr. Jeff Ovall\\
+under the direction of Dr. Jeffrey Ovall\\
 Portland State University\\
 \end{center}
 \vspace*{\fill}
@@ -52,8 +53,8 @@ Portland State University\\
 \begin{itemize}
 	\item ...A paper written by Gopal and Trefethen, published in SIAM Journal on Numerical Analysis September 2019
 	\item The Lightning Laplace code, based on the paper, yields accurate approximations quickly (on nice problems)
-	\item https://epubs.siam.org/doi/pdf/10.1137/19M125947X
-	\item https://people.maths.ox.ac.uk/trefethen/lightning.html
+	\item \url{https://epubs.siam.org/doi/pdf/10.1137/19M125947X}
+	\item \url{https://people.maths.ox.ac.uk/trefethen/lightning.html}
 \end{itemize}
 \end{slide} %%% 1
 
@@ -70,7 +71,7 @@ u(z)=h(z), \quad z\in \Gamma .
 \end{align*}
 In particular, we want to be able to handle a domain with sharp corners, curves etc. 
 
-We will find $r$, and approximation of $u$ ($u\approx\mathrm{Re}[r]$).
+We will find $r$, an approximation of $u$ ($u\approx\mathrm{Re}[r]$).
 \begin{align*}
 r(z)= \sum_{j=1}^{N_1} \frac{a_j}{z-z_j} + \sum_{j=0}^{N_2} b_j (z-z_*)^j
 \end{align*}
@@ -111,8 +112,8 @@ r(z)= \sum_{j=1}^{N_1} \frac{a_j}{z-z_j} + \sum_{j=0}^{N_2} b_j (z-z_*)^j
 
 \begin{itemize}
 	\item The real and imaginary parts of a holomorphic (and thus also an analytic) function $f=u+iv$ are harmonic;
-	\item $f$ is also smooth (infinitely differentiable); by extension this applies to $u$ and $v$ as well.
-	\item Maximum Principle: a harmonic function on a compact domain attains a max. (and min.) on the boundary.
+	\item $f$ is also smooth (infinitely differentiable) in an open set $\Omega$; by extension this applies to $u$ and $v$ as well.
+	\item Maximum Principle: a harmonic function on a compact domain attains a max. (and min.) on the boundary, so $||u||_{\Omega}=||u||_{\Gamma}$.
 \end{itemize}
 \end{slide} %%% 4a
 
@@ -121,13 +122,18 @@ r(z)= \sum_{j=1}^{N_1} \frac{a_j}{z-z_j} + \sum_{j=0}^{N_2} b_j (z-z_*)^j
 
 \begin{itemize}
 	\item The real and imaginary parts of a holomorphic (and thus also an analytic) function $f=u+iv$ are harmonic;
-	\item $f$ is also smooth (infinitely differentiable); by extension this applies to $u$ and $v$ as well.
-	\item Maximum Principle: a harmonic function on a compact domain attains a max. (and min.) on the boundary.
+	\item $f$ is also smooth (infinitely differentiable) in an open set $\Omega$; by extension this applies to $u$ and $v$ as well.
+	\item Maximum Principle: a harmonic function on a compact domain attains a max. (and min.) on the boundary, so $||u||_{\Omega}=||u||_{\Gamma}$.\\
 \end{itemize}
 
-On a simply connected domain we can construct a holomorphic function from a harmonic one: given $u$, define $g=u-iu$. The theory will work with holomorphic functions, which will trickle down to our problem.
+If given a harmonic function $u$, we can construct a holomorphic function by finding the harmonic conjugate of $u$ (say, $v$), and then $u+i v$ will work.
 
-If $r$ approximates $f$, having real part $u$, the worst we'll do over the whole domain in approximating $u$ is $||\, u(z)-\mathrm{Re}[r(z)] \,||_\infty$, $z \in \Gamma$.
+The theory will deal with holomorphic/analytic functions, and the results will trickle down to our problem.
+
+By the Max. Principle, if $r$ approximates $f=u+iv$, and $u$ behaves like $h$ on a domain boundary, then
+\begin{align*}
+||u-\mathrm{Re}[r]||_{\Omega} = ||u-\mathrm{Re}[r]||_{\Gamma} = ||h-\mathrm{Re}[r]||_{\Gamma}
+\end{align*} 
 \end{slide} %%% 4b
 
 
@@ -140,15 +146,15 @@ r(z) = \underbrace{\sum_{j=1}^{N_1} \frac{a_j}{z-z_j}}_\text{"Newman"} + \underb
 \end{align*}
 
 \begin{itemize}
-	\item Using the scheme in the paper, we can have root exponentially good approximations for $u$. The task at hand is finding the coefficients $a_j$, $b_j$.
+	\item Using the scheme outlined in the paper, we can have root exponentially good approximations for $u$. The general task is finding coefficients $a_j$, $b_j$ such that
 	\begin{align*}
 	||f-r_n||_\Omega = O(e^{-C\sqrt{n}})
 	\end{align*}
 	\item The theorems in the paper are based on interpolation, showing existence.
-	\item In the code, the problem is solved via a least squares approach using QR factorization. Code is written in MATLAB.
+	\item In the MATLAB code, the problem is solved via a least squares approach using QR factorization, and amounts to the following:
 \end{itemize}
 \begin{align*}
-\min_{\substack{\{a_1 \ldots ,a_{N_1}\} \\ \{b_1 \ldots ,b_{N_2}\}}} \sum_{j=0}^{M} {| r(y_j)-h(y_j) |}^2
+\min_{\substack{\{a_1 \ldots ,a_{N_1}\} \\ \{b_1 \ldots ,b_{N_2}\}}} \sum_{j=0}^{M} {| \mathrm{Re} [r(y_j)]-h(y_j) |}^2.
 \end{align*}
 \end{slide} %%% 5
 
@@ -190,37 +196,37 @@ r(z)= \sum_{j=1}^{N_1} \frac{a_j}{z-z_j} + \sum_{j=0}^{N_2} b_j (z-z_*)^j
 
 
 \begin{slide} %%% 7a
-{\heading{The function $r$ is harmonic }} \small \\
+{\heading{The function $\mathrm{Re}[r]$ is harmonic }} \small \\
 \begin{align*}
 r(z)= \sum_{j=1}^{N_1} \frac{a_j}{z-z_j} + \sum_{j=0}^{N_2} b_j (z-z_*)^j
 \end{align*}
-To prove $r$ is harmonic, consider $f(z)=1/z$ and $g(z)=z^k$.
-The function $f$ can be decomposed as $f=u+iv$, where
+To prove $\mathrm{Re}[r]$ is harmonic, consider $f(z)=1/z$ and $g(z)=z^k$.
+The function $f$ can be decomposed as $f=u+iv$, where $z=(x,y)$ and
 \begin{align*}
 u(x,y)=\frac{x}{x^2+y^2} &&
 v(x,y)=\frac{-y}{x^2+y^2}.
 \end{align*}
-Taking derivatives will show that $u$ and $v$ satisfy the Cauchy-Riemann equations, ${\partial}_x u={\partial}_y v$, ${\partial}_y u=-{\partial}_x v$, meaning $f$ is (holomorphic, and thus) harmonic.
+Taking derivatives will show that $u$ and $v$ satisfy the Cauchy-Riemann equations, ${\partial}_x u={\partial}_y v$, ${\partial}_y u=-{\partial}_x v$, meaning $f$ is holomorphic.
 \end{slide} %%% 7a
 
 \begin{slide} %%% 7b
-{\heading{The function $r$ is harmonic }} \small \\
+{\heading{The function $\mathrm{Re}[r]$ is harmonic }} \small \\
 \begin{align*}
 r(z)= \sum_{j=1}^{N_1} \frac{a_j}{z-z_j} + \sum_{j=0}^{N_2} b_j (z-z_*)^j
 \end{align*}
-To prove $r$ is harmonic, consider $f(z)=1/z$ and $g(z)=z^k$.
-The function $f$ can be decomposed as $f=u+iv$, where
+To prove $\mathrm{Re}[r]$ is harmonic, consider $f(z)=1/z$ and $g(z)=z^k$.
+The function $f$ can be decomposed as $f=u+iv$, where $z=(x,y)$ and
 \begin{align*}
 u(x,y)=\frac{x}{x^2+y^2} &&
 v(x,y)=\frac{-y}{x^2+y^2}.
 \end{align*}
-Taking derivatives will show that $u$ and $v$ satisfy the Cauchy-Riemann equations, ${\partial}_x u={\partial}_y v$, ${\partial}_y u=-{\partial}_x v$, meaning $f$ is (holomorphic, and thus) harmonic.
+Taking derivatives will show that $u$ and $v$ satisfy the Cauchy-Riemann equations, ${\partial}_x u={\partial}_y v$, ${\partial}_y u=-{\partial}_x v$, meaning $f$ is holomorphic.\\
 
-Writing $g$ in polar form, then in terms of sines and cosines is enough to see $g$ is harmonic:
+Writing $g$ in polar form is enough to see that $g$ is holomorphic:
 \begin{align*}
-g(z)=\rho e^{i k \theta} = \rho [\cos{(k\theta)} + i \sin{(k\theta)}] .
+g(z)=\rho^k e^{i k \theta} = \rho^k [\cos{(k\theta)} + i \sin{(k\theta)}] . \\
 \end{align*}
-Adding these templates, applying translations and scaling as necessary give us our result.
+The sum of two holomorphic functions is holomorphic, so the real part of this sum is harmonic. Applying translations and scaling as necessary give us our result.
 \end{slide} %%% 7b
 
 
@@ -306,11 +312,12 @@ The Runge part can be handled by previously established results, and the Newman 
 Numerical experiments show that:
 \begin{itemize}
 	\item We can get root exponentially good approximations on non-convex domains;
-	\item We're not limited to sectors and convex polygons, we can have curvy edges.
+	\item We're not limited to sectors and convex polygons, we can have curvy edges.\\
 \end{itemize}
-These theorems apply to a holomorphic function $f$, but our problem involves a harmonic $u$. 
 
-If we assume $u$ satisfies the corner behavior needed and $\Omega$ is simply connected, then so will a $v$, where we can have an $f=u+iv$.
+These theorems apply to an analytic function $f$, but our problem involves a harmonic $u$. 
+
+If we assume $u$ satisfies the corner behavior needed and $\Omega$ is simply connected, then so will $v$, where we can have an $f=u+iv$.
 \end{slide} %%% 13
 
 
@@ -343,7 +350,7 @@ If we assume $u$ satisfies the corner behavior needed and $\Omega$ is simply con
 Code is branded "Lightning Laplace." We enter:
 \begin{itemize}
 	\item Corners of a polygonal-ish/curvy domain in $\mathds{C}$;
-	\item boundary data in the form of a(n) real function handle(s), or scalar values, corresponding to the edges.
+	\item Boundary data in the form of a real function handle or scalar values corresponding to the edges.
 \end{itemize}
 Errors are computed by comparing the procedure with a finer sampling (so not a true error).\\
 \begin{center}
@@ -490,7 +497,7 @@ Variants:
 \begin{itemize}
 	\item Discontinuous boundary conditions: pretty much no problem, except supremum norm convergence to zero. Instead, use a supremum norm weighted by distance to the nearest corner.
 	\item Multiply connected domains: very much a problem.
-	\item Poisson equation $\Delta u = f$ with boundary conditions: find $\Delta v = f$ with arbitrary bd. conds. first, then do $w=u-v$.
+	\item Poisson equation $\Delta u = f$ with boundary condition $h$: find $\Delta v = f$ with arbitrary bd. conds., then find $w=u-v$. $\Delta w =0$ in $\Omega$, and $w=h-v_h$ on $\Gamma$.
 	\item Faster than root exponential convergence: not possible.
 	\item Domain size, matrix size: Runge part of $r$ works less optimally far away from $z_*$; $m$ corners means operation count $O(m^3 |\log{(\varepsilon)}|^6)$.
 \end{itemize}
@@ -511,6 +518,10 @@ Variants:
 
 
 \begin{slide} %%% End
+\vspace*{\fill}
+\begin{center}
+"The method is very young, and there are innumerable questions to be answered and details to be improved in further research. Since the method exploits the same mathematics that makes lightning strike trees and buildings at sharp edges, we like to think of it as a 'Lightning Laplace solver.'"
+\end{center}
 \vspace*{\fill}
 \begin{center}
 {\large\bf\color{Green} The End}
